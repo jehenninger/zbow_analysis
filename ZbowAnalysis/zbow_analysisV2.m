@@ -110,7 +110,7 @@ handles.meanValues = [0.8 0.8 0.8];
 
 % try
 %% Load FSC file
-[fileName, pathName]  = uigetfile('*.fcs','Select FCS file');
+[fileName, pathName]  = uigetfile('E:\zon_lab\FACS\*.fcs','Select FCS file');
 handles.pathName = pathName;
 [~, handles.sampleName, ~] = fileparts(fileName);
 
@@ -166,7 +166,7 @@ sampleName = handles.sampleName;
 
 hWait = waitbar(0,'Saving... Please wait...');
 %Decision Graph
-if isfield(handles,'decisionsGraph')
+if isfield(handles,'decisionGraph')
     % ff = figure('PaperUnits','inches','PaperPositionMode','manual',...
     %     'PaperPosition',[0 0 10 7],'Visible','off');
     ff = figure('units','normalized','outerposition',[0 0 0.5 1],'Visible','off');
@@ -202,12 +202,14 @@ waitbar(3/4);
 
 %Silhouette plot (if it exists)
 if isfield(handles,'silFigHandle')
-    ff = figure('units','normalized','outerposition',[0 0 0.5 1],'Visible','off');
-    new_handle = copyobj(get(handles.silPlotHandle,'Children'),ff);
-    set(new_handle,'Units','normalized','outerposition',[0.01 0.01 0.98 0.98]);
-    print(ff,fullfile(saveFolder, [sampleName, '_sil_graph.eps']),'-painters','-depsc','-r300');
-    print(ff,fullfile(saveFolder, [sampleName, '_sil_graph.jpg']),'-opengl','-djpeg','-r300');
-    close gcf
+    if isvalid(handles.silFigHandle)
+        ff = figure('units','normalized','outerposition',[0 0 0.5 1],'Visible','off');
+        new_handle = copyobj(get(handles.silPlotHandle,'Children'),ff);
+        set(new_handle,'Units','normalized','outerposition',[0.01 0.01 0.98 0.98]);
+        print(ff,fullfile(saveFolder, [sampleName, '_sil_graph.eps']),'-painters','-depsc','-r300');
+        print(ff,fullfile(saveFolder, [sampleName, '_sil_graph.jpg']),'-opengl','-djpeg','-r300');
+        close gcf
+    end
 end
 
 
@@ -277,7 +279,7 @@ function sampleSizeCluster_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-set(hObject,'String','10000');
+set(hObject,'String','20000');
 
 % --- Executes on button press in removeOutliers.
 function removeOutliers_Callback(hObject, eventdata, handles)
@@ -805,6 +807,9 @@ channelNames = {fcshdr.par.name};
 red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
 green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
 blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
+% red = fcsdat(:,find(strcmp('PE-A',channelNames)));
+% green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
+% blue = fcsdat(:,find(strcmp('CFP-A',channelNames)));
 
 sessionData = [red green blue];
 linData = [red green blue];

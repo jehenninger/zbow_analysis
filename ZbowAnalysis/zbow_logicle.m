@@ -1,12 +1,24 @@
-function [handle3D, handleTern, densityHandle] = zbow_ternary(pathName,fileName,sampleSize, cellType, plotTypeChoice,combinedChoice)
+function [sessionData,normDataTern,colorm,ternColor,ternCoords,sampleName] = zbow_logicle(file,cellType,sampleSize)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-[~, ~, ext] = fileparts(fileName);
+if ~exist('file','var') || isempty(file)
+    [file,path] = uigetfile('E:\zon_lab\FACS\*.fcs');
+    file = fullfile(path,file);
+end
 
-if isequal(ext,char('.fcs'))
-    %Load and read data
-    [fcsdat, fcshdr] = fca_readfcs(fullfile(pathName,fileName));
+if ~exist('cellType','var') || isempty(cellType)
+    
+    cellType = 'Minimal';
+    
+end
+
+if ~exist('sampleSize','var')
+    sampleSize = 20000;
+end
+
+[~,sampleName,~] = fileparts(file);
+[fcsdat, fcshdr] = fca_readfcs(file);
     channelNames = {fcshdr.par.name};
     
         %For Aria
@@ -40,7 +52,6 @@ if isequal(ext,char('.fcs'))
     % green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
     % blue = fcsdat(:,find(strcmp('FJComp-mCFP-A',channelNames)));
     % sessionData = [red green blue];
-end
 
 
 % Rough process outliers by removing above 10^5 and removing below 5000
@@ -118,97 +129,18 @@ normDataTern(:,3) = (logData(:,3)-min(logData(:,3)))./(max(logData(:,3))-min(log
 % R = normDataTern(:,1)./(normDataTern(:,1)+ normDataTern(:,2)+ normDataTern(:,3));
 % G = normDataTern(:,2)./(normDataTern(:,1)+ normDataTern(:,2)+ normDataTern(:,3));
 
-R = colorm(:,1)./(colorm(:,1)+ colorm(:,2)+ colorm(:,3));
-G = colorm(:,2)./(colorm(:,1)+ colorm(:,2)+ colorm(:,3));
+totalColor = colorm(:,1) + colorm(:,2) + colorm(:,3);
+R = colorm(:,1)./(totalColor(:));
+G = colorm(:,2)./(totalColor(:));
+B = colorm(:,3)./(totalColor(:));
 
 %Generate 2D ternary graph coordinates
 y = G*sin(pi/3);
 x = R + y*cot(pi/3);
 
-% switch combinedChoice
-%     case 'Yes'
-%         switch plotTypeChoice
-%             case 'Both'
-%                 figure,
-%                 scrollsubplot(
-%             case 'Ternary'
-%             case '3D Scatter'
-%         end
-%
-%     case 'No'
-%         figure,
-% end
+ternCoords = [x,y];
+ternColor = [R G B];
 
-figure,
-
-switch plotTypeChoice
-    case 'Both'
-        
-        set(gcf,'Units','normalized','Position',[0.5, 0.5, 0.25, 0.16]);
-        a = subplot(1,2,1);
-        handle3D = scatter3(normDataTern(:,1),...
-            normDataTern(:,2),...
-            normDataTern(:,3),...
-            20,colorm,'filled');
-        xlabel('Red'),ylabel('Green'),zlabel('Blue');
-        view(135,30);
-        
-        subplot(1,2,2);
-        handleTern = ternPlot([x, y], colorm,'true','true',10);
-        b = title(a,[fileName, ' ', 'n = ',num2str(length(normDataTern(:,1)))]);
-        set(b,'interpreter','none');
-        
-        %         binNumber = 500;
-        %
-        %         hold on
-        %         if length(normDataTern(:,1))>500
-        %             densityHandle = dscatter(x,y,...
-        %                 'PLOTTYPE','contour','BINS',[binNumber binNumber]);
-        %         else
-        %             densityHandle = 'Sample size too low';
-        %         end
-        %
-        %         hold off
-        
-    case 'Ternary'
-        
-        set(gcf,'Units','normalized','Position',[0.5, 0.5, 0.25, 0.25]);
-        handleTern = ternPlot([x, y], colorm,'true','true',10);
-        b = title([fileName, ' ', 'n = ',num2str(length(normDataTern(:,1)))]);
-        set(b,'interpreter','none');
-        set(findall(gca,'type','text'),'visible','on');
-        
-        handle3D = 0;
-                
-        %         hold on
-        %         if length(normDataTern(:,1))>500
-        %             densityHandle = dscatter(x,y,...
-        %                 'PLOTTYPE','contour','BINS',[binNumber binNumber]);
-        %         else
-        %             densityHandle = 'Sample size too low';
-        %         end
-        %
-        %         hold off
-        
-    case '3D Scatter'
-        
-        set(gcf,'Units','normalized','Position',[0.5, 0.5, 0.25, 0.25]);
-        
-        handle3D = scatter3(normDataTern(:,1),...
-            normDataTern(:,2),...
-            normDataTern(:,3),...
-            20,colorm,'filled');
-        xlabel('Red'),ylabel('Green'),zlabel('Blue');
-        view(135,30);
-        b = title([fileName,' ', 'n = ', num2str(length(normDataTern(:,1)))]);
-        set(b, 'interpreter','none');
-        set(findall(gca,'type','text'),'visible','on');
-        
-        handleTern = 0;
-        densityHandle = 0;
-        
-        hold off
-end
 
 
 end
