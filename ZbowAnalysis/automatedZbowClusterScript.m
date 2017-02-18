@@ -15,12 +15,17 @@ recombination = cell(numFiles,1);
 clusterMetric = zeros(numFiles,1);
 clusterCenterColor = cell(numFiles,1);
 meanBigClustColor = zeros(numFiles,3);
+sampleName = cell(numFiles,1);
+normRho = cell(numFiles,1);
+normDelta = cell(numFiles,1);
+clusterSize = cell(numFiles,1);
+meanClusterColor = cell(numFiles,1);
 
 for kk = 1:numFiles
     file = fullfile(pathName,fileNames{kk});
     %Step 1 use zbow_logicle to transform FACS data.
-    [data,normData,customData,ternColor,ternCoords,sampleName] = zbow_logicle(file,[],20000);
-    sampleName = strrep(sampleName,'_','.');
+    [data,normData,customData,ternColor,ternCoords,sampleName{kk}] = zbow_logicle(file,[],20000);
+    sampleName{kk} = strrep(sampleName{kk},'_','.');
     sampleSize = 2500;
     
     totalCells = size(data,1);
@@ -32,7 +37,7 @@ for kk = 1:numFiles
     nonred_count = totalCells - red_count;
     recombination{kk} = nonred_count/totalCells;
     
-    if nonred_count > 300
+    if nonred_count > 10
         
         ternCoords = ternCoords(~red_cells,:);
         customData = customData(~red_cells,:);
@@ -44,42 +49,59 @@ for kk = 1:numFiles
             [dataSamp, dataSampIdx] = datasample(ternCoords,sampleSize,'Replace',false);
         end
         
-            [rho{kk}, delta{kk}, nneigh{kk}] = deltarho(dataSamp,1);
+        [rho{kk}, delta{kk}, nneigh{kk}] = deltarho(dataSamp,1);
         
-        [maxRho, maxRhoIdx] = max(rho{kk});%Just for top density
-
-        %for top 3 delta*rho NOT DONE YET
-%         metric = max(rho{kk}.*delta{kk});
-%         [metric metricIdx] = sort(metric,'descend');
-%         [maxRho, maxRhoIdx] = max(rho{kk}.*delta{kk});
+        normRho{kk} = myNorm(rho{kk});
+        normDelta{kk} = myNorm(delta{kk});
         
-        maxPointIdx = dataSampIdx(maxRhoIdx);
-        maxPoint3D = customData(maxPointIdx,:);
-        maxPointTern = ternCoords(maxPointIdx,:);
+        rhoThresh = find(normRho{kk} > 0.1);
+        deltaThresh = find(normDelta{kk} > 0.2);
+        clusterCentersSampleIdx = intersect(rhoThresh,deltaThresh);
+        
+        clusterCentersIdx = dataSampIdx(clusterCentersSampleIdx);
+        
+        clusterCenters = ternCoords(clusterCentersIdx,:);
+        
+        %For top density
+%         [maxRho, maxRhoIdx] = max(rho{kk});
+%         
+%         maxPointIdx = dataSampIdx(maxRhoIdx);
+%         maxPoint3D = customData(maxPointIdx,:);
+%         maxPointTern = ternCoords(maxPointIdx,:);
+        
         
         
         %calculates pairwise distance of cluster centers with all cells
-        D = pdist2(maxPointTern,ternCoords);
-        %         D = pdist2(maxPoint3D,customData);
-        D = D';
-        %     set cutoff max radius, everything within this sphere gets counted
-        %     towards willmetric, 0.2 works better than 0.3, also could be tweaked
-        Dclose = D<=0.08;
-        Dsums = sum(Dclose);
-        clusterMetric(kk) = 100.*Dsums./totalCells;
+        figure,
+        clusterSize{kk} = zeros(size(clusterCenters,1),1);
+        subPlotNum = numSubplots(size(clusterCenters,1));
+      
+        meanClusterColor{kk} = zeros(size(clusterCenters,1),3);
+        for nn = 1:size(clusterCenters,1)
+%             D = pdist2(maxPointTern,ternCoords);
+            %         D = pdist2(maxPoint3D,customData);
+            D = pdist2(clusterCenters(nn,:),ternCoords);
+            D = D';
+            %     set cutoff max radius, everything within this sphere gets counted
+            %     towards willmetric, 0.2 works better than 0.3, also could be tweaked
+            Dclose = D<=0.08;
+            Dsums = sum(Dclose);
+            clusterSize{kk}(nn) = 100.*Dsums./totalCells;
+            clusterColor = 0.8*ones(nonred_count,3);
+            clusterColor(Dclose,1) = customData(Dclose,1);
+            clusterColor(Dclose,2) = customData(Dclose,2);
+            clusterColor(Dclose,3) = customData(Dclose,3);
+            
+            meanClusterColor{kk}(nn,1) = mean(customData(Dclose,1));
+            meanClusterColor{kk}(nn,2) = mean(customData(Dclose,2));
+            meanClusterColor{kk}(nn,3) = mean(customData(Dclose,3));
+            
+            subplot(subPlotNum(1),subPlotNum(2),nn),
+            ternPlot(ternCoords,clusterColor,'false');
+            drawnow;
+        end
         
-        bigClustColor = 0.8.*ones(nonred_count,3);
-        
-        bigClustColor(Dclose,1) = customData(Dclose,1);
-        bigClustColor(Dclose,2) = customData(Dclose,2);
-        bigClustColor(Dclose,3) = customData(Dclose,3);
-        
-        meanBigClustColor(kk,1) = mean(customData(Dclose,1));
-        meanBigClustColor(kk,2) = mean(customData(Dclose,2));
-        meanBigClustColor(kk,3) = mean(customData(Dclose,3));
-        
-        figure, ternPlot(ternCoords,bigClustColor);
-        text(0,0.75,sampleName);
+        text(0,0.75,sampleName{kk});
         
         %     [N{kk}, Xedges, Yedges] = histcounts2(ternCoords(:,1),ternCoords(:,2));
         %
@@ -178,33 +200,24 @@ end
 if numFiles > 1
     cascade;
 end
-% for jj = 1:numFiles
-%     % recombination cutoff, could be adjusted
-%     if recombination{jj} >0.4
-%         %plot max density color center 
-%     maxwillmetric(jj) = max(willmetric{jj}(:));
-%     end
-% end
+
 % 
-% 
+% Plotting the cluster sizes
 figure,
 hold on
 for jj = 1:numFiles
-    plot([jj jj],[0 clusterMetric(jj)],'--k');
+    plot([jj jj], [0 max(clusterSize{jj})],'--k');
+    xx = jj*ones(size(clusterSize{jj},1),1);
+    scatter(xx,clusterSize{jj},200,meanClusterColor{jj},'filled');
 end
-scatter(1:numFiles,clusterMetric,200,meanBigClustColor,'filled');
+
 ylim([0,70]);
 hold off
 
 set(gca,'XTick',1:numFiles);
+xticklabels(sampleName);
+xtickangle(90);
 
 
-% for jj = 1:numFiles
-%     [maxProb(jj), maxProbIdx(jj)] = max(N{jj}(:));
-% end
-% 
-% maxProb = maxProb';
-% figure, scatter(1:numFiles,maxProb);
-% 
-% figure, scatter(1:numFiles,bigClust);
+
 multiWaitbar('CloseAll');

@@ -1,20 +1,20 @@
-function [handle3D, handleTern, densityHandle] = zbow_ternary(pathName,fileName,sampleSize, cellType, plotTypeChoice,combinedChoice)
+function [handle3D, handleTern, densityHandle] = zbow_ternary(fileName,sampleSize, cellType, plotTypeChoice,combinedChoice)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-[~, ~, ext] = fileparts(fileName);
+[pathName, sampleName, ext] = fileparts(fileName);
 
 if isequal(ext,char('.fcs'))
     %Load and read data
-    [fcsdat, fcshdr] = fca_readfcs(fullfile(pathName,fileName));
+    [fcsdat, fcshdr] = fca_readfcs(fileName);
     channelNames = {fcshdr.par.name};
     
         %For Aria
-        red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
-        green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
-        blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
-        sessionData = [red green blue];
-    
+%         red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
+%         green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
+%         blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
+%         sessionData = [red green blue];
+%     
 %     %For Aria
 %     red = fcsdat(:,find(strcmp('PE-A',channelNames)));
 %     green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
@@ -27,6 +27,12 @@ if isequal(ext,char('.fcs'))
     % green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
     % blue = fcsdat(:,find(strcmp('AmCyan-A',channelNames)));
     % sessionData = [red green blue];
+    
+    % %For Children's self-sorter
+    red = fcsdat(:,find(strcmp('FJComp-DsRed-A',channelNames)));
+    green = fcsdat(:,find(strcmp('FJComp-GFP-A',channelNames)));
+    blue = fcsdat(:,find(strcmp('FJComp-DAPI-A',channelNames)));
+    sessionData = [red green blue];
     
     
     % %For Fortessa un-compensated
@@ -66,9 +72,11 @@ switch cellType
         sessionData(sessionData(:,1)>2.0*10e5 |...
             sessionData(:,2) > 2.0*10e5 |...
             sessionData(:,3) > 2.0*10e5, :) = [];
-        
-        % sessionData(lowIndex==1,:) = [];
+          % sessionData(lowIndex==1,:) = [];
         % sessionData(highIndex,:) = [];
+    case 'None'
+        
+      
 end
 
 if sampleSize < length(sessionData(:,1))
@@ -154,8 +162,8 @@ switch plotTypeChoice
         view(135,30);
         
         subplot(1,2,2);
-        handleTern = ternPlot([x, y], colorm,'true','true',10);
-        b = title(a,[fileName, ' ', 'n = ',num2str(length(normDataTern(:,1)))]);
+        handleTern = ternPlot([x, y], colorm,'false','true',10,'false');
+        b = title(a,[sampleName, ' ', 'n = ',num2str(length(normDataTern(:,1)))]);
         set(b,'interpreter','none');
         
         %         binNumber = 500;
@@ -174,7 +182,7 @@ switch plotTypeChoice
         
         set(gcf,'Units','normalized','Position',[0.5, 0.5, 0.25, 0.25]);
         handleTern = ternPlot([x, y], colorm,'true','true',10);
-        b = title([fileName, ' ', 'n = ',num2str(length(normDataTern(:,1)))]);
+        b = title([sampleName, ' ', 'n = ',num2str(length(normDataTern(:,1)))]);
         set(b,'interpreter','none');
         set(findall(gca,'type','text'),'visible','on');
         
@@ -200,7 +208,7 @@ switch plotTypeChoice
             20,colorm,'filled');
         xlabel('Red'),ylabel('Green'),zlabel('Blue');
         view(135,30);
-        b = title([fileName,' ', 'n = ', num2str(length(normDataTern(:,1)))]);
+        b = title([sampleName,' ', 'n = ', num2str(length(normDataTern(:,1)))]);
         set(b, 'interpreter','none');
         set(findall(gca,'type','text'),'visible','on');
         

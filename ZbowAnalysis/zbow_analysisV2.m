@@ -811,6 +811,12 @@ blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
 % green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
 % blue = fcsdat(:,find(strcmp('CFP-A',channelNames)));
 
+
+% %For Children's self-sorter Aria
+% red = fcsdat(:,find(strcmp('FJComp-DsRed-A',channelNames)));
+% green = fcsdat(:,find(strcmp('FJComp-GFP-A',channelNames)));
+% blue = fcsdat(:,find(strcmp('FJComp-DAPI-A',channelNames)));
+
 sessionData = [red green blue];
 linData = [red green blue];
 
@@ -902,11 +908,11 @@ data(:,3) = data(:,3).^(1/gamma);
 
 function [normData,relData,ternCoords] = myDataProcessing(data)
 %Normalized data
-normData(:,1) = myNorm(data(:,1));
-normData(:,2) = myNorm(data(:,2));
-normData(:,3) = myNorm(data(:,3));
+% normData(:,1) = myNorm(data(:,1));
+% normData(:,2) = myNorm(data(:,2));
+% normData(:,3) = myNorm(data(:,3));
 
-
+normData = data;
 %Relative contributions of each color
 relData = myColorRatio(normData(:,1),normData(:,2),normData(:,3));
 R = relData(:,1);

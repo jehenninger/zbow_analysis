@@ -24,16 +24,16 @@ clear xx
 
 
 %% NEW WAY
-% % %Gaussian kernel to find rho
-% rhoElement = exp(-(dist/dc).*(dist/dc));
-% rho = sum(rhoElement,1)'-1;
-% clear rhoElement
+% %Gaussian kernel to find rho
+rhoElement = exp(-(dist/dc).*(dist/dc));
+rho = sum(rhoElement,1)'-1;
+clear rhoElement
 
-rho = dist - dc;
-rho(rho>=0) = 0;
-rho(rho<0) = 1;
-
-rho = sum(rho,2);
+% Dc method
+% rho = dist - dc;
+% rho(rho>=0) = 0;
+% rho(rho<0) = 1;
+% rho = sum(rho,2);
 
 
 
