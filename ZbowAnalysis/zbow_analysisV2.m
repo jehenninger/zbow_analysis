@@ -908,11 +908,10 @@ data(:,3) = data(:,3).^(1/gamma);
 
 function [normData,relData,ternCoords] = myDataProcessing(data)
 %Normalized data
-% normData(:,1) = myNorm(data(:,1));
-% normData(:,2) = myNorm(data(:,2));
-% normData(:,3) = myNorm(data(:,3));
+normData(:,1) = myNorm(data(:,1));
+normData(:,2) = myNorm(data(:,2));
+normData(:,3) = myNorm(data(:,3));
 
-normData = data;
 %Relative contributions of each color
 relData = myColorRatio(normData(:,1),normData(:,2),normData(:,3));
 R = relData(:,1);
