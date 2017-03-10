@@ -401,7 +401,7 @@ end
 [normDataTernLymphoid, ternCoordsLymphoid] = myDataProcessing(handles.logDataTernLymphoid);
 [normDataDefaultLymphoid, ternCoordsDefaultLymphoid] = myDataProcessing(handles.logDataDefaultLymphoid);
 [normDataLinLymphoid, ternCoordsLinLymphoid] = myDataProcessing(handles.linDataLymphoid);
-[newColorLymphoid] = myColorProcessing(normDataTernLymphoid,2.2);
+[newColorLymphoid] = myColorProcessing(normDataTernLymphoid,1);
 
 
 %Plot ternary graph

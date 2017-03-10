@@ -5,12 +5,11 @@ function [M] = make3D2TernAnimation(normDataTern,ternColor,ternCoords)
 ternCoords(:,3) = 0;
 
 
-
 for ii = 1:size(ternCoords,1)
     C{ii} = getInterpolatingPoints(normDataTern(ii,:),ternCoords(ii,:));
 end
 
-viewAngle = getInterpolatingPoints([135 50], [0 90]);
+viewAngle = getInterpolatingPoints([45 50], [0 90]);
 
 timePoint = cell(101,1);
 for nn = 1:101
@@ -23,15 +22,34 @@ end
 figure,
 axis manual
 xlim([0 1]), ylim([0 1]), zlim([0 1]);
-view(135,50);
+view(45,50);
+count = 1;
+
+%rotation of 3D plot
+scatter3(timePoint{1}(:,1),timePoint{1}(:,2),timePoint{1}(:,3),20,ternColor,'filled');
+for nn = 1:90
+    [az, el] = view;
+    view(az+5,el);
+    M(count) = getframe;
+    count = count + 1;
+end
+
+
+%Pause after rotation
+for mm = 1:15
+    scatter3(timePoint{1}(:,1),timePoint{1}(:,2),timePoint{1}(:,3),20,ternColor,'filled');
+    M(count) = getframe;
+    count = count + 1;
+end
+
+%transform into 2D plot
 for kk = 1:101
-    
     scatter3(timePoint{kk}(:,1),timePoint{kk}(:,2),timePoint{kk}(:,3),20,ternColor,'filled');
     xlim([0 1]), ylim([0 1]), zlim([0 1]);
     view(viewAngle(kk,1), viewAngle(kk,2));
     set(gca,'XTick',[],'YTick',[],'ZTick',[]);
-    M(kk) = getframe;
-    
+    M(count) = getframe;
+    count = count + 1;
 end
 
 figure,

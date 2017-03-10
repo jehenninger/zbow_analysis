@@ -7,6 +7,8 @@ else
     numFiles = 1;
     fileNames = {fileNames};
 end
+
+plotQuest = questdlg('Plot ternary graphs?','Plot question','Yes','No','Yes');
 multiWaitbar('Analyzing flow cytometry data...',0);
 rho = cell(numFiles,1);
 delta = cell(numFiles,1);
@@ -63,22 +65,26 @@ for kk = 1:numFiles
         clusterCenters = ternCoords(clusterCentersIdx,:);
         
         %For top density
-%         [maxRho, maxRhoIdx] = max(rho{kk});
-%         
-%         maxPointIdx = dataSampIdx(maxRhoIdx);
-%         maxPoint3D = customData(maxPointIdx,:);
-%         maxPointTern = ternCoords(maxPointIdx,:);
+        %         [maxRho, maxRhoIdx] = max(rho{kk});
+        %
+        %         maxPointIdx = dataSampIdx(maxRhoIdx);
+        %         maxPoint3D = customData(maxPointIdx,:);
+        %         maxPointTern = ternCoords(maxPointIdx,:);
         
         
         
         %calculates pairwise distance of cluster centers with all cells
-        figure,
+        switch plotQuest
+            case 'Yes'
+                figure,
+            case 'No'
+        end
         clusterSize{kk} = zeros(size(clusterCenters,1),1);
         subPlotNum = numSubplots(size(clusterCenters,1));
-      
+        
         meanClusterColor{kk} = zeros(size(clusterCenters,1),3);
         for nn = 1:size(clusterCenters,1)
-%             D = pdist2(maxPointTern,ternCoords);
+            %             D = pdist2(maxPointTern,ternCoords);
             %         D = pdist2(maxPoint3D,customData);
             D = pdist2(clusterCenters(nn,:),ternCoords);
             D = D';
@@ -95,13 +101,18 @@ for kk = 1:numFiles
             meanClusterColor{kk}(nn,1) = mean(customData(Dclose,1));
             meanClusterColor{kk}(nn,2) = mean(customData(Dclose,2));
             meanClusterColor{kk}(nn,3) = mean(customData(Dclose,3));
+            switch plotQuest
+                case 'Yes'
+                    subplot(subPlotNum(1),subPlotNum(2),nn),
+                    ternPlot(ternCoords,clusterColor,'false');
+                    drawnow;
+                    text(0,0.75,sampleName{kk});
+                case 'No'
+            end
             
-            subplot(subPlotNum(1),subPlotNum(2),nn),
-            ternPlot(ternCoords,clusterColor,'false');
-            drawnow;
         end
         
-        text(0,0.75,sampleName{kk});
+        
         
         %     [N{kk}, Xedges, Yedges] = histcounts2(ternCoords(:,1),ternCoords(:,2));
         %
@@ -198,10 +209,14 @@ for kk = 1:numFiles
 end
 
 if numFiles > 1
-    cascade;
+    switch plotQuest
+        case 'Yes'
+            cascade;
+        case 'No'
+    end
 end
 
-% 
+%
 % Plotting the cluster sizes
 figure,
 hold on

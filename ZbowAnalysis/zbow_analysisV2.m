@@ -1,3 +1,4 @@
+
 function varargout = zbow_analysisV2(varargin)
 % ZBOW_ANALYSISV2 MATLAB code for zbow_analysisV2.fig
 %      ZBOW_ANALYSISV2, by itself, creates a new ZBOW_ANALYSISV2 or raises the existing
@@ -803,21 +804,29 @@ function [linData, logDataDefault, logDataTern, fcsdat, channelNames] = loadFCSF
 [fcsdat, fcshdr] = fca_readfcs(file);
 channelNames = {fcshdr.par.name};
 
-%Find red, green, and blue FACS parameters
-red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
-green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
-blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
-% red = fcsdat(:,find(strcmp('PE-A',channelNames)));
-% green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
-% blue = fcsdat(:,find(strcmp('CFP-A',channelNames)));
 
+cambridgeTest = strfind(channelNames,'FJComp-FITC-A');
+cambridgeTest = [cambridgeTest{:}];
+childrensTest = strfind(channelNames,'FJComp-GFP-A');
+childrensTest = [childrensTest{:}];
 
-% %For Children's self-sorter Aria
-% red = fcsdat(:,find(strcmp('FJComp-DsRed-A',channelNames)));
-% green = fcsdat(:,find(strcmp('FJComp-GFP-A',channelNames)));
-% blue = fcsdat(:,find(strcmp('FJComp-DAPI-A',channelNames)));
+if cambridgeTest == 1
+    %For Aria
+    red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
+    green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
+    blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
+    sessionData = [red green blue];
+    
+elseif childrensTest == 1
+    %For Children's Aria (self-sorter)
+    red = fcsdat(:,find(strcmp('FJComp-DsRed-A',channelNames)));
+    green = fcsdat(:,find(strcmp('FJComp-GFP-A',channelNames)));
+    blue = fcsdat(:,find(strcmp('FJComp-DAPI-A',channelNames)));
+    sessionData = [red green blue];
+else
+    error('Could not identify fluorescence parameters...');
+end
 
-sessionData = [red green blue];
 linData = [red green blue];
 
 %Default logicle values
@@ -1197,50 +1206,109 @@ T = handles.T;
 M = handles.M;
 A = handles.A;
 
-fscA = fcsdat(:,find(strcmp('FSC-A',channelNames)));
-fscH = fcsdat(:,find(strcmp('FSC-H',channelNames)));
-fscW = fcsdat(:,find(strcmp('FSC-W',channelNames)));
+cambridgeTest = strfind(channelNames,'FJComp-FITC-A');
+    cambridgeTest = [cambridgeTest{:}];
+    childrensTest = strfind(channelNames,'FJComp-GFP-A');
+    childrensTest = [childrensTest{:}];
+    
+    if cambridgeTest == 1
+        %For Aria
+        fscA = fcsdat(:,find(strcmp('FSC-A',channelNames)));
+        fscH = fcsdat(:,find(strcmp('FSC-H',channelNames)));
+        fscW = fcsdat(:,find(strcmp('FSC-W',channelNames)));
+        
+        sscA = fcsdat(:,find(strcmp('SSC-A',channelNames)));
+        sscAW = calculateLogicleWidth(handles,sscA);
+        sscA = logicleTransform(sscA,T,sscAW,M,A);
+        
+        sscH = fcsdat(:,find(strcmp('SSC-H',channelNames)));
+        sscHW = calculateLogicleWidth(handles,sscH);
+        sscH = logicleTransform(sscH,T,sscHW,M,A);
+        
+        
+        sscW = fcsdat(:,find(strcmp('SSC-W',channelNames)));
+        sscWW = calculateLogicleWidth(handles,sscW);
+        sscW = logicleTransform(sscW,T,sscWW,M,A);
+        
+        liveDye = fcsdat(:,find(strcmp('FJComp-APC-A',channelNames)));
+        liveDyeW = calculateLogicleWidth(handles,liveDye);
+        liveDye = logicleTransform(liveDye,T,liveDyeW,M,A);
+        
+        red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
+        redW = calculateLogicleWidth(handles,red);
+        red = logicleTransform(red,T,redW,M,A);
+        
+        redAuto = fcsdat(:,find(strcmp('PE-Cy7-A',channelNames)));
+        redAutoW = calculateLogicleWidth(handles,redAuto);
+        redAuto = logicleTransform(redAuto,T,redAutoW,M,A);
+        
+        green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
+        greenW = calculateLogicleWidth(handles,green);
+        green = logicleTransform(green,T,greenW,M,A);
+        
+        greenAuto = fcsdat(:,find(strcmp('PerCP-A',channelNames)));
+        greenAutoW = calculateLogicleWidth(handles,greenAuto);
+        greenAuto = logicleTransform(greenAuto,T,greenAutoW,M,A);
+        
+        blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
+        blueW = calculateLogicleWidth(handles,blue);
+        blue = logicleTransform(blue,T,blueW,M,A);
+        
+        blueAuto = fcsdat(:,find(strcmp('Chromomycin-A',channelNames)));
+        blueAutoW = calculateLogicleWidth(handles,blueAuto);
+        blueAuto = logicleTransform(blueAuto,T,blueAutoW,M,A);
+        
+    elseif childrensTest == 1
+        %For Children's Aria (self-sorter)
+        fscA = fcsdat(:,find(strcmp('FSC-A',channelNames)));
+        fscH = fcsdat(:,find(strcmp('FSC-H',channelNames)));
+        fscW = fcsdat(:,find(strcmp('FSC-W',channelNames)));
+        
+        sscA = fcsdat(:,find(strcmp('SSC-A',channelNames)));
+        sscAW = calculateLogicleWidth(handles,sscA);
+        sscA = logicleTransform(sscA,T,sscAW,M,A);
+        
+        sscH = fcsdat(:,find(strcmp('SSC-H',channelNames)));
+        sscHW = calculateLogicleWidth(handles,sscH);
+        sscH = logicleTransform(sscH,T,sscHW,M,A);
+        
+        
+        sscW = fcsdat(:,find(strcmp('SSC-W',channelNames)));
+        sscWW = calculateLogicleWidth(handles,sscW);
+        sscW = logicleTransform(sscW,T,sscWW,M,A);
+        
+        liveDye = fcsdat(:,find(strcmp('FJComp-APC-Cy7-A',channelNames)));
+        liveDyeW = calculateLogicleWidth(handles,liveDye);
+        liveDye = logicleTransform(liveDye,T,liveDyeW,M,A);
+        
+        red = fcsdat(:,find(strcmp('FJComp-DsRed-A',channelNames)));
+        redW = calculateLogicleWidth(handles,red);
+        red = logicleTransform(red,T,redW,M,A);
+        
+        redAuto = fcsdat(:,find(strcmp('PE-Cy7-A',channelNames)));
+        redAutoW = calculateLogicleWidth(handles,redAuto);
+        redAuto = logicleTransform(redAuto,T,redAutoW,M,A);
+        
+        green = fcsdat(:,find(strcmp('FJComp-GFP-A',channelNames)));
+        greenW = calculateLogicleWidth(handles,green);
+        green = logicleTransform(green,T,greenW,M,A);
+        
+        greenAuto = fcsdat(:,find(strcmp('PerCP-A',channelNames)));
+        greenAutoW = calculateLogicleWidth(handles,greenAuto);
+        greenAuto = logicleTransform(greenAuto,T,greenAutoW,M,A);
+        
+        blue = fcsdat(:,find(strcmp('FJComp-DAPI-A',channelNames)));
+        blueW = calculateLogicleWidth(handles,blue);
+        blue = logicleTransform(blue,T,blueW,M,A);
+        
+        blueAuto = fcsdat(:,find(strcmp('Hoechst Red-A',channelNames)));
+        blueAutoW = calculateLogicleWidth(handles,blueAuto);
+        blueAuto = logicleTransform(blueAuto,T,blueAutoW,M,A);
+    else
+        msgbox('Could not identify fluorescence parameters...');
+    end
 
-sscA = fcsdat(:,find(strcmp('SSC-A',channelNames)));
-sscAW = calculateLogicleWidth(handles,sscA);
-sscA = logicleTransform(sscA,T,sscAW,M,A);
 
-sscH = fcsdat(:,find(strcmp('SSC-H',channelNames)));
-sscHW = calculateLogicleWidth(handles,sscH);
-sscH = logicleTransform(sscH,T,sscHW,M,A);
-
-
-sscW = fcsdat(:,find(strcmp('SSC-W',channelNames)));
-sscWW = calculateLogicleWidth(handles,sscW);
-sscW = logicleTransform(sscW,T,sscWW,M,A);
-
-liveDye = fcsdat(:,find(strcmp('FJComp-APC-A',channelNames)));
-liveDyeW = calculateLogicleWidth(handles,liveDye);
-liveDye = logicleTransform(liveDye,T,liveDyeW,M,A);
-
-red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
-redW = calculateLogicleWidth(handles,red);
-red = logicleTransform(red,T,redW,M,A);
-
-redAuto = fcsdat(:,find(strcmp('PE-Cy7-A',channelNames)));
-redAutoW = calculateLogicleWidth(handles,redAuto);
-redAuto = logicleTransform(redAuto,T,redAutoW,M,A);
-
-green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
-greenW = calculateLogicleWidth(handles,green);
-green = logicleTransform(green,T,greenW,M,A);
-
-greenAuto = fcsdat(:,find(strcmp('PerCP-A',channelNames)));
-greenAutoW = calculateLogicleWidth(handles,greenAuto);
-greenAuto = logicleTransform(greenAuto,T,greenAutoW,M,A);
-
-blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
-blueW = calculateLogicleWidth(handles,blue);
-blue = logicleTransform(blue,T,blueW,M,A);
-
-blueAuto = fcsdat(:,find(strcmp('Chromomycin-A',channelNames)));
-blueAutoW = calculateLogicleWidth(handles,blueAuto);
-blueAuto = logicleTransform(blueAuto,T,blueAutoW,M,A);
 
 totalData = [fscA, fscH, fscW, sscA, sscH, sscW, liveDye,...
     red, redAuto, green, greenAuto, blue, blueAuto];

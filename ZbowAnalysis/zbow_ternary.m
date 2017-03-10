@@ -9,44 +9,27 @@ if isequal(ext,char('.fcs'))
     [fcsdat, fcshdr] = fca_readfcs(fileName);
     channelNames = {fcshdr.par.name};
     
+    cambridgeTest = strfind(channelNames,'FJComp-FITC-A');
+    cambridgeTest = [cambridgeTest{:}];
+    childrensTest = strfind(channelNames,'FJComp-GFP-A');
+    childrensTest = [childrensTest{:}];
+    
+    if cambridgeTest == 1
         %For Aria
-%         red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
-%         green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
-%         blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
-%         sessionData = [red green blue];
-%     
-%     %For Aria
-%     red = fcsdat(:,find(strcmp('PE-A',channelNames)));
-%     green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
-%     blue = fcsdat(:,find(strcmp('CFP-A',channelNames)));
-%     sessionData = [red green blue];
-    
-    
-    % %For Children's Aria
-    % red = fcsdat(:,find(strcmp('DsRed-A',channelNames)));
-    % green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
-    % blue = fcsdat(:,find(strcmp('AmCyan-A',channelNames)));
-    % sessionData = [red green blue];
-    
-    % %For Children's self-sorter
-    red = fcsdat(:,find(strcmp('FJComp-DsRed-A',channelNames)));
-    green = fcsdat(:,find(strcmp('FJComp-GFP-A',channelNames)));
-    blue = fcsdat(:,find(strcmp('FJComp-DAPI-A',channelNames)));
-    sessionData = [red green blue];
-    
-    
-    % %For Fortessa un-compensated
-    % red = fcsdat(:,find(strcmp('PE-A',channelNames)));
-    % green = fcsdat(:,find(strcmp('FITC-A',channelNames)));
-    % blue = fcsdat(:,find(strcmp('mCFP-A',channelNames)));
-    % sessionData = [red green blue];
-    
-    % %For Fortessa
-    % red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
-    % green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
-    % blue = fcsdat(:,find(strcmp('FJComp-mCFP-A',channelNames)));
-    % sessionData = [red green blue];
-end
+        red = fcsdat(:,find(strcmp('FJComp-PE-A',channelNames)));
+        green = fcsdat(:,find(strcmp('FJComp-FITC-A',channelNames)));
+        blue = fcsdat(:,find(strcmp('FJComp-CFP-A',channelNames)));
+        sessionData = [red green blue];
+        
+    elseif childrensTest == 1
+        %For Children's Aria (self-sorter)
+        red = fcsdat(:,find(strcmp('FJComp-DsRed-A',channelNames)));
+        green = fcsdat(:,find(strcmp('FJComp-GFP-A',channelNames)));
+        blue = fcsdat(:,find(strcmp('FJComp-DAPI-A',channelNames)));
+        sessionData = [red green blue];
+    else
+        error('Could not identify fluorescence parameters...');
+    end
 
 
 % Rough process outliers by removing above 10^5 and removing below 5000
