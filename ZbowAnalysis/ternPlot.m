@@ -1,4 +1,4 @@
-function [h,hDen] = ternPlot(ternCoords, colorm,labels,outline, markerSize, density)
+function [h,hDen] = ternPlot(ternCoords, colorm,labels,outline, markerSize, density, alpha)
 %UNTITLED3 Summary of this function goes here
 %   ternCoords is the x and y coordinates of the RGB relative values
 %   colorm is a mx3 color matrix specifying color for each cell in
@@ -27,6 +27,9 @@ elseif nargin < 6
     density = 'true';
 end
 
+if ~exist('alpha','var') || isempty('alpha')
+    alpha = 1;
+end
 
 x = ternCoords(:,1);
 y = ternCoords(:,2);
@@ -91,16 +94,16 @@ switch labels
             plot([lxa(i+1) lxb(nlabels - i + 2)], [lya(i+1) lyb(nlabels - i + 2)],'LineStyle',':','Color',[0.8 0.8 0.8],'linewidth',1,'handlevisibility','off');
             plot([lxb(i+1) lxc(nlabels - i + 2)], [lyb(i+1) lyc(nlabels - i + 2)],'LineStyle',':','Color',[0.8 0.8 0.8],'linewidth',1,'handlevisibility','off');
             plot([lxc(i+1) lxa(nlabels - i + 2)], [lyc(i+1) lya(nlabels - i + 2)],'LineStyle',':','Color',[0.8 0.8 0.8],'linewidth',1,'handlevisibility','off');
-        end;
+        end
     case 'false'
 end
 
 if nargin<5
-    h = scatter(x, y, 15, colorm,'filled','Linewidth',1);
+    h = scatter(x, y, 15, colorm,'filled','Linewidth',1, 'MarkerFaceAlpha',alpha, 'MarkerEdgeAlpha',alpha);
 end
 
 if nargin >= 5
-    h = scatter(x, y, markerSize, colorm, 'filled', 'Linewidth', 1);
+    h = scatter(x, y, markerSize, colorm, 'filled', 'Linewidth', 1, 'MarkerFaceAlpha',alpha, 'MarkerEdgeAlpha',alpha);
 end
 
 switch density
